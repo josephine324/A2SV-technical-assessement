@@ -6,6 +6,7 @@ export interface IUser extends mongoose.Document {
   username: string;
   email: string;
   password: string;
+  role: 'Admin' | 'Customer';
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -32,6 +33,13 @@ const userSchema = new mongoose.Schema<IUser>(
     password: {
       type: String,
       required: true,
+    },
+    role: {
+      type: String,
+      enum: ['Admin', 'Customer'],
+      default: 'Customer',
+      required: true,
+      index: true,
     },
   },
   { timestamps: false } // No auto timestamps for now

@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import authRoutes from './routes/authRoutes';
+import productRoutes from './routes/productRoutes';
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ app.use(express.json()); // Parse JSON bodies
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/products', productRoutes);
 
 // Health check
 app.get('/', (req: Request, res: Response) => {
