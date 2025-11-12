@@ -128,6 +128,49 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
+export const getProductById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findOne({ id });
+
+    if (!product) {
+      const response: BaseResponse = {
+        success: false,
+        message: 'Product not found',
+        errors: ['Product not found'],
+      };
+      return res.status(404).json(response);
+    }
+
+    const response: BaseResponse = {
+      success: true,
+      message: 'Product retrieved successfully',
+      object: {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        stock: product.stock,
+        category: product.category,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+      },
+      errors: null,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Get product error:', error);
+    const response: BaseResponse = {
+      success: false,
+      message: 'Server error',
+      errors: ['An unexpected error occurred'],
+    };
+    res.status(500).json(response);
+  }
+};
+
 export const listProducts = async (req: Request, res: Response) => {
   const page = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
   const pageSizeQuery =

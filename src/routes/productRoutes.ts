@@ -4,6 +4,7 @@ import { validate } from '../middlewares/validate';
 import {
   createProduct,
   createProductSchema,
+  getProductById,
   listProducts,
   updateProduct,
   updateProductSchema,
@@ -20,6 +21,8 @@ router.post(
   validate(createProductSchema),
   createProduct
 );
+
+router.get('/:id', getProductById);
 
 router.put(
   '/:id',
