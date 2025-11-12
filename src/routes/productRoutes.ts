@@ -4,6 +4,7 @@ import { validate } from '../middlewares/validate';
 import {
   createProduct,
   createProductSchema,
+  deleteProduct,
   getProductById,
   listProducts,
   updateProduct,
@@ -30,6 +31,13 @@ router.put(
   authorize('Admin'),
   validate(updateProductSchema),
   updateProduct
+);
+
+router.delete(
+  '/:id',
+  authenticate,
+  authorize('Admin'),
+  deleteProduct
 );
 
 export default router;
