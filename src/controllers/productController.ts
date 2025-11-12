@@ -3,7 +3,7 @@ import { z } from 'zod';
 import Product from '../models/Product';
 import { BaseResponse } from '../interfaces/responses';
 
-export const createProductSchema = z.object({
+const baseProductSchema = {
   name: z
     .string()
     .min(3, 'Name must be at least 3 characters')
@@ -19,7 +19,9 @@ export const createProductSchema = z.object({
   category: z
     .string()
     .min(1, 'Category is required'),
-});
+};
+
+export const createProductSchema = z.object(baseProductSchema);
 
 type CreateProductInput = z.infer<typeof createProductSchema>;
 
@@ -55,6 +57,68 @@ export const createProduct = async (req: Request, res: Response) => {
     res.status(201).json(response);
   } catch (error) {
     console.error('Create product error:', error);
+    const response: BaseResponse = {
+      success: false,
+      message: 'Server error',
+      errors: ['An unexpected error occurred'],
+    };
+    res.status(500).json(response);
+  }
+};
+
+export const updateProductSchema = z
+  .object({
+    name: baseProductSchema.name.optional(),
+    description: baseProductSchema.description.optional(),
+    price: baseProductSchema.price.optional(),
+    stock: baseProductSchema.stock.optional(),
+    category: baseProductSchema.category.optional(),
+  })
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    'At least one field must be provided'
+  );
+
+type UpdateProductInput = z.infer<typeof updateProductSchema>;
+
+export const updateProduct = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const updates = req.body as UpdateProductInput;
+
+  try {
+    const updatedProduct = await Product.findOneAndUpdate({ id }, updates, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedProduct) {
+      const response: BaseResponse = {
+        success: false,
+        message: 'Product not found',
+        errors: ['Product not found'],
+      };
+      return res.status(404).json(response);
+    }
+
+    const response: BaseResponse = {
+      success: true,
+      message: 'Product updated successfully',
+      object: {
+        id: updatedProduct.id,
+        name: updatedProduct.name,
+        description: updatedProduct.description,
+        price: updatedProduct.price,
+        stock: updatedProduct.stock,
+        category: updatedProduct.category,
+        createdAt: updatedProduct.createdAt,
+        updatedAt: updatedProduct.updatedAt,
+      },
+      errors: null,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Update product error:', error);
     const response: BaseResponse = {
       success: false,
       message: 'Server error',
