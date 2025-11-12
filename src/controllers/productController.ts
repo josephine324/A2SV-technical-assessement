@@ -133,14 +133,23 @@ export const listProducts = async (req: Request, res: Response) => {
   const pageSizeQuery =
     Number(req.query.limit ?? req.query.pageSize) || undefined;
   const pageSize = pageSizeQuery && pageSizeQuery > 0 ? pageSizeQuery : 10;
+  const rawSearch = typeof req.query.search === 'string' ? req.query.search : '';
+  const trimmedSearch = rawSearch.trim();
+  const hasSearch = trimmedSearch.length > 0;
+
+  const filter = hasSearch
+    ? {
+        name: { $regex: trimmedSearch, $options: 'i' },
+      }
+    : {};
 
   try {
     const [products, totalProducts] = await Promise.all([
-      Product.find()
+      Product.find(filter)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .sort({ createdAt: -1 }),
-      Product.countDocuments(),
+      Product.countDocuments(filter),
     ]);
 
     const totalPages = Math.ceil(totalProducts / pageSize) || 1;
