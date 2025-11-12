@@ -4,11 +4,14 @@ import { validate } from '../middlewares/validate';
 import {
   createProduct,
   createProductSchema,
+  listProducts,
   updateProduct,
   updateProductSchema,
 } from '../controllers/productController';
 
 const router = Router();
+
+router.get('/', listProducts);
 
 router.post(
   '/',

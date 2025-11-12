@@ -128,3 +128,54 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
+export const listProducts = async (req: Request, res: Response) => {
+  const page = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
+  const pageSizeQuery =
+    Number(req.query.limit ?? req.query.pageSize) || undefined;
+  const pageSize = pageSizeQuery && pageSizeQuery > 0 ? pageSizeQuery : 10;
+
+  try {
+    const [products, totalProducts] = await Promise.all([
+      Product.find()
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .sort({ createdAt: -1 }),
+      Product.countDocuments(),
+    ]);
+
+    const totalPages = Math.ceil(totalProducts / pageSize) || 1;
+
+    const response: BaseResponse = {
+      success: true,
+      message: 'Products retrieved successfully',
+      object: {
+        currentPage: page,
+        pageSize,
+        totalPages,
+        totalProducts,
+        products: products.map((product) => ({
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          stock: product.stock,
+          category: product.category,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+        })),
+      },
+      errors: null,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('List products error:', error);
+    const response: BaseResponse = {
+      success: false,
+      message: 'Server error',
+      errors: ['An unexpected error occurred'],
+    };
+    res.status(500).json(response);
+  }
+};
+
